@@ -130,15 +130,12 @@ def visualize_compound_dict(compound_dict, real_mass, compound_name=True):
         for k, v in sorted_dict.items():
             sort_list.append([str(real_mass), str(k[3]), str(k[0]), str(k[1]), str(v)])
 
-        print(tabulate(sort_list, headers=['Mass', 'RT', 'Compound Name', 'Inchikey', 'Score']))
+        return tabulate(sort_list, headers=['Mass', 'RT', 'Compound Name', 'Inchikey', 'Score'])
     else:
         for k, v in sorted_dict.items():
             sort_list.append([str(k), str(v)])
 
         print(tabulate(sort_list, headers=['Inchikey', 'Score']))
-
-    # for testing purpose
-    # return tabulate(sort_list, headers=['Compound Name', 'Inchikey', 'Score'])
 
 
 def get_inchikey_score(inchikey_dict, predicted_fp):
