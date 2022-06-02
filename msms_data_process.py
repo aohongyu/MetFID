@@ -5,11 +5,11 @@ import numpy as np
 
 def data_process(msms_data_list):
     """
-    Given a MS/MS data which contains the first line in each peak list
+    Given a MS/MS data list which contains the first element in the list
     represents the precursor m/z, retention time(in minutes), and ion mode.
     The remaining are m/z and intensity pairs. Returns a dict that contains
     precursor mass, retention time, ion mode, m/z and intensity pairs.
-    :param msms_data_list: MS/MS data file
+    :param msms_data_list: MS/MS data list
     :return: dict{precursor, rt, mode, [m/z], [intensity]}
     """
     msms_data_dict = {}
