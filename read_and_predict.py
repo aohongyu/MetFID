@@ -34,6 +34,7 @@ def read_and_predict(file_name):
         else:
             real_mass = msms_dict['precursor'] - 1.007276
 
-        with open('_files/prediction_output.txt', 'a') as result:
+        output_file = file_name.split('.')[0] + '_prediction.txt'
+        with open(output_file, 'a') as result:
             result.write(title_list.pop(0) + '\n')
             result.write(rc.visualize_compound_dict(compound_dict, real_mass) + '\n')
