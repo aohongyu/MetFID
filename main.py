@@ -6,7 +6,7 @@ import pubchempy
 
 if __name__ == '__main__':
     # TODO: for lab members (use the database to search)
-    msms_dict = mdp.read_data_file('_files/testing_compound.txt')
+    msms_dict = mdp.data_process('_files/testing_compound.txt')
     msms_dict_scale = mdp.scaling(msms_dict)
     binned_vec = mdp.binning(msms_dict_scale)
     predicted_fp = prediction.predict_fingerprint(binned_vec)

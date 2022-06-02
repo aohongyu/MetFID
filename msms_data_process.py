@@ -3,13 +3,14 @@ from openbabel import pybel
 import numpy as np
 
 
-def read_data_file(msms_data):
+def data_process(msms_data):
     """
     Given a MS/MS data which contains the first line in each peak list
-    represents the precursor m/z. The remaining are m/z and intensity pairs.
-    Returns a dict that contains precursor m/z, m/z and intensity pairs.
+    represents the precursor m/z, retention time(in minutes), and ion mode.
+    The remaining are m/z and intensity pairs. Returns a dict that contains
+    precursor mass, retention time, ion mode, m/z and intensity pairs.
     :param msms_data: MS/MS data file
-    :return: dict{precursor, mode, [m/z], [intensity]}
+    :return: dict{precursor, rt, mode, [m/z], [intensity]}
 
     REQ: For now, each MS/MS data only contains one compound.
     """
@@ -18,10 +19,11 @@ def read_data_file(msms_data):
     intensity = []
 
     msms_file = open(msms_data, 'r')
-    precursor_mode = msms_file.readline().split(' ')
+    precursor_rt_mode = msms_file.readline().split(' ')
 
-    msms_data_dict['precursor'] = float(precursor_mode[0])
-    mode = precursor_mode[1].rstrip()
+    msms_data_dict['precursor'] = float(precursor_rt_mode[0])
+    msms_data_dict['rt'] = float(precursor_rt_mode[1])
+    mode = precursor_rt_mode[2].rstrip()
 
     if mode == 'positive':
         msms_data_dict['mode'] = 'positive'
@@ -44,12 +46,16 @@ def read_data_file(msms_data):
     return msms_data_dict
 
 
+if __name__ == '__main__':
+    print(data_process('_files/testing_compound.txt'))
+
+
 def scaling(msms_data_dict):
     """
     Given a MSMS data dict, scaling the MSMS data if there exists some
     intensities greater than 100%.
-    :param msms_data_dict: dict{precursor, mode, [m/z], [intensity]}
-    :return: dict{precursor, mode, [m/z], [intensity]}
+    :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, rt, mode, [m/z], [intensity]}
     """
     max_intensity = max(msms_data_dict['intensity'])
     rate = 100 / max_intensity
@@ -66,8 +72,8 @@ def filtering(msms_data_dict):
     than five peaks with relative intensity above 2%.
 
     Note: for package only, not for the testing.
-    :param msms_data_dict: dict{precursor, mode, [m/z], [intensity]}
-    :return: dict{precursor, mode, [m/z], [intensity]}
+    :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, rt, mode, [m/z], [intensity]}
     """
     tem_list = []
     for i in msms_data_dict['intensity']:
@@ -84,8 +90,8 @@ def denoise(msms_data_dict):
     """
     Given a MSMS data dict, remove the intensity pair that has m/z larger
     than the precursor mass.
-    :param msms_data_dict: dict{precursor, mode, [m/z], [intensity]}
-    :return: dict{precursor, mode, [m/z], [intensity]}
+    :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, rt, mode, [m/z], [intensity]}
     """
     mass = msms_data_dict['precursor']
     for i in msms_data_dict['m/z']:
@@ -102,7 +108,7 @@ def binning(msms_data_dict):
     Given a MSMS data dict, binning the m/z range of each MS/MS spectrum into
     pre-specified bins, which indicate continuous integer m/z values, and
     calculate the accumulated intensities within each bin as feature values.
-    :param msms_data_dict: dict{precursor, [m/z], [intensity]}
+    :param msms_data_dict: dict{precursor, rt, [m/z], [intensity]}
     :return: binned vector of length 1174
     """
     first_digit = 5
