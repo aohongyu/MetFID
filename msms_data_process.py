@@ -3,24 +3,20 @@ from openbabel import pybel
 import numpy as np
 
 
-def data_process(msms_data):
+def data_process(msms_data_list):
     """
     Given a MS/MS data which contains the first line in each peak list
     represents the precursor m/z, retention time(in minutes), and ion mode.
     The remaining are m/z and intensity pairs. Returns a dict that contains
     precursor mass, retention time, ion mode, m/z and intensity pairs.
-    :param msms_data: MS/MS data file
+    :param msms_data_list: MS/MS data file
     :return: dict{precursor, rt, mode, [m/z], [intensity]}
-
-    REQ: For now, each MS/MS data only contains one compound.
     """
     msms_data_dict = {}
     mz = []
     intensity = []
 
-    msms_file = open(msms_data, 'r')
-    precursor_rt_mode = msms_file.readline().split(' ')
-
+    precursor_rt_mode = msms_data_list[0].split(' ')
     msms_data_dict['precursor'] = float(precursor_rt_mode[0])
     msms_data_dict['rt'] = float(precursor_rt_mode[1])
     mode = precursor_rt_mode[2].rstrip()
@@ -34,7 +30,7 @@ def data_process(msms_data):
     else:
         raise ValueError("The ion mode should be 'positive' or 'negative'.")
 
-    for i in msms_file:
+    for i in msms_data_list[1:]:
         mz_intensity = i.split(' ')
         mz.append(float(mz_intensity[0]))
         intensity.append(float(mz_intensity[1]))
@@ -42,12 +38,7 @@ def data_process(msms_data):
     msms_data_dict['m/z'] = mz
     msms_data_dict['intensity'] = intensity
 
-    msms_file.close()
     return msms_data_dict
-
-
-if __name__ == '__main__':
-    print(data_process('_files/testing_compound.txt'))
 
 
 def scaling(msms_data_dict):
