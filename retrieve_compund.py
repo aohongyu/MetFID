@@ -3,13 +3,14 @@ import pubchempy
 from tabulate import tabulate
 
 
-def retrieve_compound(search_type, fingerprint, database, ppm=20, mass=None, inchikey=None):
+def retrieve_compound(search_type, fingerprint, database, rt, ppm=20, mass=None, inchikey=None):
     """
     Given a search type, predicted fingerprint, a database, and mass(optional),
     returns a table that includes all the possible compounds.
     :param search_type: search type
     :param fingerprint: predicted fingerprint (len = 528)
     :param database: database.csv
+    :param rt: retention time (in minutes)
     :param ppm: mass tolerance in ppm (default 20)
     :param mass: precursor mass (optional, required when search_type is mass)
     :param inchikey: inchikey (optional, required when search_type is formula)
@@ -29,6 +30,9 @@ def retrieve_compound(search_type, fingerprint, database, ppm=20, mass=None, inc
     try:
         for candidate, fp in candidate_dict.items():
             tanimoto = calculate_tanimoto(fp, fingerprint)
+
+            # add precursor mass and retention time to the dict
+            candidate += (mass, rt)
             compound_dict[candidate] = tanimoto
     except AttributeError:
         print("Compound Not Found!")
@@ -110,11 +114,12 @@ def calculate_tanimoto(real_fp, predicted_fp):
     return identity_num / length
 
 
-def visualize_compound_dict(compound_dict, compound_name=True):
+def visualize_compound_dict(compound_dict, real_mass, compound_name=True):
     """
     Given a compound dict, prints out the dict as a table in an order of
     descending tanimoto scores.
     :param compound_dict: compound dict
+    :param real_mass: original precursor mass
     :param compound_name: if we can obtain the compound name
     :return: None
     """
@@ -123,9 +128,9 @@ def visualize_compound_dict(compound_dict, compound_name=True):
 
     if compound_name:
         for k, v in sorted_dict.items():
-            sort_list.append([str(k[0]), str(k[1]), str(v)])
+            sort_list.append([str(real_mass), str(k[3]), str(k[0]), str(k[1]), str(v)])
 
-        print(tabulate(sort_list, headers=['Compound Name', 'Inchikey', 'Score']))
+        print(tabulate(sort_list, headers=['Mass', 'RT', 'Compound Name', 'Inchikey', 'Score']))
     else:
         for k, v in sorted_dict.items():
             sort_list.append([str(k), str(v)])
