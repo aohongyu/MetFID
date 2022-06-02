@@ -1,18 +1,10 @@
-import msms_data_process as mdp
-import prediction
-import retrieve_compund as rc
+import read_and_predict as rap
 import pandas as pd
 import pubchempy
 
 if __name__ == '__main__':
     # TODO: for lab members (use the database to search)
-    msms_dict = mdp.data_process('_files/testing_compound.txt')
-    msms_dict_scale = mdp.scaling(msms_dict)
-    binned_vec = mdp.binning(msms_dict_scale)
-    predicted_fp = prediction.predict_fingerprint(binned_vec)
-    compound_dict = rc.retrieve_compound('mass', predicted_fp, '_files/MassDB.csv', 20, msms_dict['precursor'])
-    # compound_dict = rc.retrieve_compound('formula', predicted_fp, '_files/MassDB.csv', 20, inchikey='UWPJYQYRSWYIGZ-UHFFFAOYSA-N')
-    rc.visualize_compound_dict(compound_dict)
+    rap.read_and_predict('_files/testing_compound.txt')
 
     # TODO: for other users
     # msms_dict = mdp.read_data_file('_files/testing_compound.txt')

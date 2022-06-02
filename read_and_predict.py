@@ -6,6 +6,14 @@ import retrieve_compund as rc
 
 
 def read_and_predict(file_name):
+    """
+    Given a MS/MS data file which contains the first element in the file
+    represents the precursor m/z, retention time(in minutes), and ion mode.
+    The remaining are m/z and intensity pairs. Outputs the predictions in a
+    text file.
+    :param file_name: file path for msms data
+    :return: None
+    """
     with open(file_name) as msms_file:
         msms_data = msms_file.read()
 
@@ -29,7 +37,3 @@ def read_and_predict(file_name):
         with open('_files/prediction_output.txt', 'a') as result:
             result.write(title_list.pop(0) + '\n')
             result.write(rc.visualize_compound_dict(compound_dict, real_mass) + '\n')
-
-
-if __name__ == '__main__':
-    read_and_predict('_files/testing_compound.txt')
