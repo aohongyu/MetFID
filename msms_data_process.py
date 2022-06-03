@@ -128,23 +128,21 @@ def one2two(binned_vector):
     return data.reshape(shape)
 
 
-def get_binned(inchikey_file):
+def get_binned(inchikey_list):
     """
-    Given a text file that contains inchikeys, returns a dict that has
-    inchikeys as 'key' and binned fingerprint as 'value'.
-    :param inchikey_file: a text file that contains inchikeys
+    Given a text that contains inchikeys, returns a dict that has inchikeys as
+    'key' and binned fingerprint as 'value'.
+    :param inchikey_list: a text file that contains inchikeys
     :return: dict{inchikey: fingerprint}
     """
-    inch_file = open(inchikey_file, 'r')
     inchikey_dict = {}
 
-    for key in inch_file:
+    for key in inchikey_list:
         key = key.rstrip()
         smiles = pubchempy.get_compounds(identifier=key, namespace='inchikey')[0].canonical_smiles
         mol = pybel.readstring('smi', smiles)
         fp_vec = fp_conversion(mol.calcfp('FP3').bits, mol.calcfp('FP4').bits, mol.calcfp('MACCS').bits)
         inchikey_dict[key] = fp_vec
-    inch_file.close()
 
     return inchikey_dict
 

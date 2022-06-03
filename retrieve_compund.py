@@ -115,7 +115,6 @@ def visualize_compound_dict(compound_dict, compound_name=True):
     Given a compound dict, prints out the dict as a table in an order of
     descending tanimoto scores.
     :param compound_dict: compound dict
-    :param real_mass: original precursor mass
     :param compound_name: if we can obtain the compound name
     :return: None
     """
@@ -131,7 +130,7 @@ def visualize_compound_dict(compound_dict, compound_name=True):
         for k, v in sorted_dict.items():
             sort_list.append([str(k), str(v)])
 
-        print(tabulate(sort_list, headers=['Inchikey', 'Score']))
+        return tabulate(sort_list, headers=['Inchikey', 'Score'])
 
 
 def get_inchikey_score(inchikey_dict, predicted_fp):
