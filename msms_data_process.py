@@ -16,10 +16,9 @@ def data_process(msms_data_list):
     mz = []
     intensity = []
 
-    precursor_rt_mode = msms_data_list[0].split(' ')
-    msms_data_dict['precursor'] = float(precursor_rt_mode[0])
-    msms_data_dict['rt'] = float(precursor_rt_mode[1])
-    mode = precursor_rt_mode[2].rstrip()
+    precursor_mode = msms_data_list[0].split(' ')
+    msms_data_dict['precursor'] = float(precursor_mode[0])
+    mode = precursor_mode[2].rstrip()
 
     if mode == 'positive':
         msms_data_dict['mode'] = 'positive'

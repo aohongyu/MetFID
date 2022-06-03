@@ -26,15 +26,10 @@ def read_and_predict(file_name):
         msms_dict_scale = mdp.scaling(msms_dict)
         binned_vec = mdp.binning(msms_dict_scale)
         predicted_fp = prediction.predict_fingerprint(binned_vec)
-        compound_dict = rc.retrieve_compound('mass', predicted_fp, '_files/MassDB.csv', msms_dict['rt'], 20, msms_dict['precursor'])
+        compound_dict = rc.retrieve_compound('mass', predicted_fp, '_files/MassDB.csv', 20, msms_dict['precursor'])
         # compound_dict = rc.retrieve_compound('formula', predicted_fp, '_files/MassDB.csv', 20, inchikey='UWPJYQYRSWYIGZ-UHFFFAOYSA-N')
-
-        if msms_dict['mode'] == 'positive':  # restore to original mass
-            real_mass = msms_dict['precursor'] + 1.007276
-        else:
-            real_mass = msms_dict['precursor'] - 1.007276
 
         output_file = file_name.split('.')[0] + '_prediction.txt'
         with open(output_file, 'a') as result:
             result.write(title_list.pop(0) + '\n')
-            result.write(rc.visualize_compound_dict(compound_dict, real_mass) + '\n')
+            result.write(rc.visualize_compound_dict(compound_dict) + '\n')
