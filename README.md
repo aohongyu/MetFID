@@ -100,7 +100,7 @@ RFHAOTPXVQNOHP-UHFFFAOYSA-N  0.213483
 XXOYUNQCBYNWNL-UHFFFAOYSA-N  0.189474
 ```
 
-The first column represents the `InChIKeys`, and the second column represents the `Tanimoto similarity score`. Each table will ranked in a descending order by score.
+The first column represents the `InChIKeys`, and the second column represents the `Tanimoto similarity score`. Each table will be ranked in a descending order by score.
 
 
 [1]:https://pubchempy.readthedocs.io/en/latest/guide/install.html
