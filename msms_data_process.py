@@ -148,6 +148,13 @@ def get_binned(inchikey_list):
 
 
 def fp_conversion(fp3, fp4, macc):
+    """
+    Converts fp3, fp4, and MACCs to a new fingerprint.
+    :param fp3: FP3 fingerprint (55 digits)
+    :param fp4: FP4 fingerprint (307 digits)
+    :param macc: MACCS (166 digits)
+    :return: combined fingerprint with length of 528
+    """
     fp3_temp = list(range(1, 56))
     fp4_temp = list(range(1, 308))
     macc_temp = list(range(1, 167))
