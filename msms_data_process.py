@@ -1,6 +1,7 @@
 import pubchempy
 from openbabel import pybel
 import numpy as np
+import pickle
 
 
 def data_process(msms_data_list):
@@ -99,21 +100,22 @@ def binning(msms_data_dict):
     pre-specified bins, which indicate continuous integer m/z values, and
     calculate the accumulated intensities within each bin as feature values.
     :param msms_data_dict: dict{precursor, rt, [m/z], [intensity]}
-    :return: binned vector of length 1174
+    :return: binned vector of length 40,088
     """
     first_digit = 5
-    intensity_digit = 0
-    input_vec = [0] * 1174  # 14 - 1178, 1174
+    input_vec = [0] * 117331
+    mz_list = [int(round((i - first_digit) * 100, 0)) for i in msms_data_dict['m/z']]
 
-    mz_list = [int(round(i, 0)) - first_digit for i in msms_data_dict['m/z']]
+    for i in enumerate(mz_list):
+        input_vec[i[1]] = msms_data_dict['intensity'][i[0]]
 
-    for i in mz_list:
-        input_vec[i] += msms_data_dict['intensity'][intensity_digit]
-        intensity_digit += 1
+    with open('_files/spectra_to_add_indexes.p', 'rb') as index_file:
+        index_list = pickle.load(index_file)
 
+    spectra_vec = [input_vec[i] for i in index_list]
     # input_vec = one2two(input_vec)  # convert binned vector from 1d to 2d
 
-    return input_vec
+    return spectra_vec
 
 
 # TODO: for 2d CNN
