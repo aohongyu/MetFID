@@ -9,26 +9,18 @@ def data_process(msms_data_list):
     Given a MS/MS data list which contains the first element in the list
     represents the precursor m/z, retention time(in minutes), and ion mode.
     The remaining are m/z and intensity pairs. Returns a dict that contains
-    precursor mass, retention time, ion mode, m/z and intensity pairs.
+    precursor mass, m/z and intensity pairs.
     :param msms_data_list: MS/MS data list
-    :return: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, [m/z], [intensity]}
     """
     msms_data_dict = {}
     mz = []
     intensity = []
 
-    precursor_mode = msms_data_list[0].split(' ')
-    msms_data_dict['precursor'] = float(precursor_mode[0])
-    mode = precursor_mode[1].rstrip()
-
-    if mode == 'positive':
-        msms_data_dict['mode'] = 'positive'
-        msms_data_dict['precursor'] -= 1.007276
-    elif mode == 'negative':
-        msms_data_dict['mode'] = 'negative'
-        msms_data_dict['precursor'] += 1.007276
-    else:
-        raise ValueError("The ion mode should be 'positive' or 'negative'.")
+    precursor_mass = float(msms_data_list[0])
+    print('precursor_mode:', precursor_mass)
+    msms_data_dict['precursor'] = precursor_mass
+    msms_data_dict['precursor'] += 1.007276
 
     for i in msms_data_list[1:]:
         mz_intensity = i.split(' ')
@@ -46,7 +38,7 @@ def scaling(msms_data_dict):
     Given a MSMS data dict, scaling the MSMS data if there exists some
     intensities greater than 100%.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, [m/z], [intensity]}
     """
     max_intensity = max(msms_data_dict['intensity'])
     rate = 100 / max_intensity
@@ -64,7 +56,7 @@ def filtering(msms_data_dict):
 
     Note: for package only, not for the testing.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, [m/z], [intensity]}
     """
     tem_list = []
     for i in msms_data_dict['intensity']:
@@ -82,7 +74,7 @@ def denoise(msms_data_dict):
     Given a MSMS data dict, remove the intensity pair that has m/z larger
     than the precursor mass.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{precursor, rt, mode, [m/z], [intensity]}
+    :return: dict{precursor, [m/z], [intensity]}
     """
     mass = msms_data_dict['precursor']
     for i in msms_data_dict['m/z']:
@@ -99,7 +91,7 @@ def binning(msms_data_dict):
     Given a MSMS data dict, binning the m/z range of each MS/MS spectrum into
     pre-specified bins, which indicate continuous integer m/z values, and
     calculate the accumulated intensities within each bin as feature values.
-    :param msms_data_dict: dict{precursor, rt, [m/z], [intensity]}
+    :param msms_data_dict: dict{precursor, [m/z], [intensity]}
     :return: binned vector of length 40,088
     """
     first_digit = 5
