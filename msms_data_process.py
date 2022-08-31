@@ -1,26 +1,68 @@
+import pickle
+
+import numpy as np
 import pubchempy
 from openbabel import pybel
-import numpy as np
-import pickle
+
+
+def calculate_adduct(pm, adduct=None):
+    """
+    Given a precursor mass and an adduct(optional), returns all possible mass
+    after considering the adducts. We only consider the followings:
+    1. Positive ion mode
+    M+H, M+NH4, M+Na, M+H-H2O, M+K, M+ACN+H, M+ACN+Na, M+2Na-H, M+2H, M+3H,
+    M+H+Na, M+2H+Na, M+2Na, M+2Na+H, M+Li, M+CH3OH+H
+
+    2. Negative ion mode
+    M-H, M-H2O-H, M+Na-2H, M+Cl, M+K-2H, M+FA-H, M-2H, M-3H, M+CH3COO, M+F
+
+    Adduct data was obtained from : https://fiehnlab.ucdavis.edu/staff/kind/metabolomics/ms-adduct-calculator/
+    :param pm: precursor mass
+    :param adduct:
+    :return: List[all possible masses]
+    """
+    # adduct_table = {
+    #     'M+H': pm - 1.007276, 'M+NH4': pm - 18.033823,
+    #     'M+Na': pm - 22.989218, 'M+H-H2O': pm + 17.00687,
+    #     'M+K': pm - 38.963158, 'M+ACN+H': pm - 42.033823,
+    #     'M+ACN+Na': pm - 64.015765, 'M+2Na-H': pm - 44.971160,
+    #     'M+2H': 2 * (pm - 1.007276), 'M+3H': 3 * (pm - 1.007276),
+    #     'M-H': pm + 1.007276, 'M-H2O-H': pm + 19.01839,
+    #     'M+Na-2H': pm - 20.974666, 'M+Cl': pm - 34.969402,
+    #     'M+K-2H': pm - 36.948606, 'M+FA-H': pm - 44.998201,
+    #     'M-2H': 2 * (pm + 1.007276), 'M-3H': 3 * (pm + 1.007276),
+    #     'M+CH3COO': pm - 59.04078, 'M+F': pm - 18.99840
+    # }
+
+    adduct_table = {
+        'M+H': pm - 1.007276, 'M+NH4': pm - 18.033823,
+        'M+Na': pm - 22.989218, 'M-H': pm + 1.007276,
+        'M+Cl': pm - 34.969402, 'M+FA-H': pm - 44.998201
+    }
+
+    if adduct and adduct not in adduct_table:
+        raise ValueError('Adduct is not in the list.')
+
+    if not adduct:
+        return [i for i in adduct_table.values()]
+    else:
+        return [adduct_table[adduct]]
 
 
 def data_process(msms_data_list):
     """
     Given a MS/MS data list which contains the first element in the list
-    represents the precursor m/z, retention time(in minutes), and ion mode.
-    The remaining are m/z and intensity pairs. Returns a dict that contains
-    precursor mass, m/z and intensity pairs.
+    represents the precursor m/z. The remaining are m/z and intensity pairs.
+    Returns a dict that contains precursor mass, m/z and intensity pairs.
     :param msms_data_list: MS/MS data list
-    :return: dict{precursor, [m/z], [intensity]}
+    :return: dict{[precursor masses], [m/z], [intensity]}
     """
     msms_data_dict = {}
     mz = []
     intensity = []
 
     precursor_mass = float(msms_data_list[0])
-    print('precursor_mode:', precursor_mass)
-    msms_data_dict['precursor'] = precursor_mass
-    msms_data_dict['precursor'] += 1.007276
+    msms_data_dict['precursor'] = calculate_adduct(precursor_mass)
 
     for i in msms_data_list[1:]:
         mz_intensity = i.split(' ')
@@ -30,6 +72,7 @@ def data_process(msms_data_list):
     msms_data_dict['m/z'] = mz
     msms_data_dict['intensity'] = intensity
 
+    print(msms_data_dict)
     return msms_data_dict
 
 
@@ -38,7 +81,7 @@ def scaling(msms_data_dict):
     Given a MSMS data dict, scaling the MSMS data if there exists some
     intensities greater than 100%.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{precursor, [m/z], [intensity]}
+    :return: dict{[precursor masses], [m/z], [intensity]}
     """
     max_intensity = max(msms_data_dict['intensity'])
     rate = 100 / max_intensity
@@ -56,7 +99,7 @@ def filtering(msms_data_dict):
 
     Note: for package only, not for the testing.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{precursor, [m/z], [intensity]}
+    :return: dict{[precursor masses], [m/z], [intensity]}
     """
     tem_list = []
     for i in msms_data_dict['intensity']:
@@ -74,7 +117,7 @@ def denoise(msms_data_dict):
     Given a MSMS data dict, remove the intensity pair that has m/z larger
     than the precursor mass.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{precursor, [m/z], [intensity]}
+    :return: dict{[precursor masses], [m/z], [intensity]}
     """
     mass = msms_data_dict['precursor']
     for i in msms_data_dict['m/z']:
@@ -91,7 +134,7 @@ def binning(msms_data_dict):
     Given a MSMS data dict, binning the m/z range of each MS/MS spectrum into
     pre-specified bins, which indicate continuous integer m/z values, and
     calculate the accumulated intensities within each bin as feature values.
-    :param msms_data_dict: dict{precursor, [m/z], [intensity]}
+    :param msms_data_dict: dict{[precursor masses], [m/z], [intensity]}
     :return: binned vector of length 40,088
     """
     first_digit = 5
