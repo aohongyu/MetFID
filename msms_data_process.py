@@ -72,7 +72,6 @@ def data_process(msms_data_list):
     msms_data_dict['m/z'] = mz
     msms_data_dict['intensity'] = intensity
 
-    print(msms_data_dict)
     return msms_data_dict
 
 
@@ -112,21 +111,21 @@ def filtering(msms_data_dict):
     return msms_data_dict
 
 
-def denoise(msms_data_dict):
-    """
-    Given a MSMS data dict, remove the intensity pair that has m/z larger
-    than the precursor mass.
-    :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{[precursor masses], [m/z], [intensity]}
-    """
-    mass = msms_data_dict['precursor']
-    for i in msms_data_dict['m/z']:
-        if i > mass:
-            index_to_remove = msms_data_dict['m/z'].index(i)
-            msms_data_dict['m/z'].pop(index_to_remove)
-            msms_data_dict['intensity'].pop(index_to_remove)
-
-    return msms_data_dict
+# def denoise(msms_data_dict):
+#     """
+#     Given a MSMS data dict, remove the intensity pair that has m/z larger
+#     than the precursor mass.
+#     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
+#     :return: dict{[precursor masses], [m/z], [intensity]}
+#     """
+#     mass = msms_data_dict['precursor']
+#     for i in msms_data_dict['m/z']:
+#         if i > mass:
+#             index_to_remove = msms_data_dict['m/z'].index(i)
+#             msms_data_dict['m/z'].pop(index_to_remove)
+#             msms_data_dict['intensity'].pop(index_to_remove)
+#
+#     return msms_data_dict
 
 
 def binning(msms_data_dict):

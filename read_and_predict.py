@@ -24,10 +24,10 @@ def msms_predict(msms_file_path):
         msms_list = i.split('\n')[1:-1]
         msms_dict = mdp.data_process(msms_list)
         msms_dict_scale = mdp.scaling(msms_dict)
-        msms_dict_denoised = mdp.denoise(msms_dict_scale)
-        binned_vec = mdp.binning(msms_dict_denoised)
+        # msms_dict_denoised = mdp.denoise(msms_dict_scale)
+        binned_vec = mdp.binning(msms_dict_scale)
         predicted_fp = prediction.predict_fingerprint(binned_vec)
-        compound_dict = rc.retrieve_compound(predicted_fp, '_files/MassDB.csv', 20, msms_dict['precursor'])
+        compound_dict = rc.retrieve_compound(predicted_fp, '_files/MassDB.csv', msms_dict['precursor'], 10)
 
         output_file = msms_file_path.split('.')[0] + '_prediction.txt'
         with open(output_file, 'a') as result:
