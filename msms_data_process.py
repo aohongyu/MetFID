@@ -5,10 +5,11 @@ import pubchempy
 from openbabel import pybel
 
 
-def calculate_adduct(pm, adduct=None):
+def calculate_adduct(pm, mode, adduct=None):
     """
-    Given a precursor mass and an adduct(optional), returns all possible mass
-    after considering the adducts. We only consider the followings:
+    Given a precursor mass, ion mode, and an adduct(optional), returns all
+    possible mass after considering the adducts. We only consider the
+    followings:
     1. Positive ion mode
     M+H, M+NH4, M+Na, M+H-H2O, M+K, M+ACN+H, M+ACN+Na, M+2Na-H, M+2H, M+3H,
     M+H+Na, M+2H+Na, M+2Na, M+2Na+H, M+Li, M+CH3OH+H
@@ -16,9 +17,10 @@ def calculate_adduct(pm, adduct=None):
     2. Negative ion mode
     M-H, M-H2O-H, M+Na-2H, M+Cl, M+K-2H, M+FA-H, M-2H, M-3H, M+CH3COO, M+F
 
-    Adduct data was obtained from : https://fiehnlab.ucdavis.edu/staff/kind/metabolomics/ms-adduct-calculator/
+    Adduct data was obtained from: https://fiehnlab.ucdavis.edu/staff/kind/metabolomics/ms-adduct-calculator/
     :param pm: precursor mass
-    :param adduct:
+    :param mode: ionization mode
+    :param adduct: adduct (optional)
     :return: List[all possible masses]
     """
     # adduct_table = {
@@ -33,36 +35,33 @@ def calculate_adduct(pm, adduct=None):
     #     'M-2H': 2 * (pm + 1.007276), 'M-3H': 3 * (pm + 1.007276),
     #     'M+CH3COO': pm - 59.04078, 'M+F': pm - 18.99840
     # }
+    pos = {'M+H': pm - 1.007276, 'M+NH4': pm - 18.033823, 'M+Na': pm - 22.989218}
+    neg = {'M-H': pm + 1.007276, 'M+Cl': pm - 34.969402, 'M+FA-H': pm - 44.998201}
 
-    adduct_table = {
-        'M+H': pm - 1.007276, 'M+NH4': pm - 18.033823,
-        'M+Na': pm - 22.989218, 'M-H': pm + 1.007276,
-        'M+Cl': pm - 34.969402, 'M+FA-H': pm - 44.998201
-    }
-
-    if adduct and adduct not in adduct_table:
-        raise ValueError('Adduct is not in the list.')
-
-    if not adduct:
-        return [i for i in adduct_table.values()]
+    if mode == 'positive':
+        return [i for i in pos.values()]
+    elif mode == 'negative':
+        return [i for i in neg.values()]
     else:
-        return [adduct_table[adduct]]
+        raise ValueError("The ion mode should be 'positive' or 'negative'.")
 
 
 def data_process(msms_data_list):
     """
     Given a MS/MS data list which contains the first element in the list
     represents the precursor m/z. The remaining are m/z and intensity pairs.
-    Returns a dict that contains precursor mass, m/z and intensity pairs.
+    Returns a dict that contains precursor mass, ion mode, m/z and intensity
+    pairs.
     :param msms_data_list: MS/MS data list
-    :return: dict{[precursor masses], [m/z], [intensity]}
+    :return: dict{[precursor masses], mode, [m/z], [intensity]}
     """
     msms_data_dict = {}
     mz = []
     intensity = []
 
-    precursor_mass = float(msms_data_list[0])
-    msms_data_dict['precursor'] = calculate_adduct(precursor_mass)
+    precursor_mode = msms_data_list[0].split(' ')
+    msms_data_dict['precursor'] = calculate_adduct(float(precursor_mode[0]), precursor_mode[1])
+    msms_data_dict['mode'] = precursor_mode[1]
 
     for i in msms_data_list[1:]:
         mz_intensity = i.split(' ')
@@ -80,7 +79,7 @@ def scaling(msms_data_dict):
     Given a MSMS data dict, scaling the MSMS data if there exists some
     intensities greater than 100%.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{[precursor masses], [m/z], [intensity]}
+    :return: dict{[precursor masses], mode, [m/z], [intensity]}
     """
     max_intensity = max(msms_data_dict['intensity'])
     rate = 100 / max_intensity
@@ -98,7 +97,7 @@ def filtering(msms_data_dict):
 
     Note: for package only, not for the testing.
     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-    :return: dict{[precursor masses], [m/z], [intensity]}
+    :return: dict{[precursor masses], mode, [m/z], [intensity]}
     """
     tem_list = []
     for i in msms_data_dict['intensity']:
@@ -116,7 +115,7 @@ def filtering(msms_data_dict):
 #     Given a MSMS data dict, remove the intensity pair that has m/z larger
 #     than the precursor mass.
 #     :param msms_data_dict: dict{precursor, rt, mode, [m/z], [intensity]}
-#     :return: dict{[precursor masses], [m/z], [intensity]}
+#     :return: dict{[precursor masses], mode, [m/z], [intensity]}
 #     """
 #     mass = msms_data_dict['precursor']
 #     for i in msms_data_dict['m/z']:
@@ -133,7 +132,7 @@ def binning(msms_data_dict):
     Given a MSMS data dict, binning the m/z range of each MS/MS spectrum into
     pre-specified bins, which indicate continuous integer m/z values, and
     calculate the accumulated intensities within each bin as feature values.
-    :param msms_data_dict: dict{[precursor masses], [m/z], [intensity]}
+    :param msms_data_dict: dict{[precursor masses], mode, [m/z], [intensity]}
     :return: binned vector of length 40,088
     """
     first_digit = 5
