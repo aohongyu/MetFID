@@ -51,7 +51,7 @@ def retrieve_candidate(database, mass_list, ppm):
         if len(candidate_df) == 0:
             continue
 
-        candidate_list = candidate_df[['Name', 'Inchikey', 'Formula', 'fp_vec']].values.tolist()
+        candidate_list = candidate_df[['Name', 'Inchikey', 'Formula', '5618_fp']].values.tolist()
 
         for candidate in candidate_list:
             fp = candidate[3]

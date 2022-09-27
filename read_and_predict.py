@@ -27,7 +27,7 @@ def msms_predict(msms_file_path):
         # msms_dict_denoised = mdp.denoise(msms_dict_scale)
         binned_vec = mdp.binning(msms_dict_scale)
         predicted_fp = prediction.predict_fingerprint(binned_vec)
-        compound_dict = rc.retrieve_compound(predicted_fp, '_files/MassDB.csv', msms_dict['precursor'], 10)
+        compound_dict = rc.retrieve_compound(predicted_fp, '_files/massDB_SMILE_5618fp_CASMI16+22.csv', msms_dict['precursor'], 10)
 
         output_file = msms_file_path.split('.')[0] + '_prediction.txt'
         with open(output_file, 'a') as result:
