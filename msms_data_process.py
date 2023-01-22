@@ -3,9 +3,10 @@ import pickle
 import numpy as np
 import pubchempy
 from openbabel import pybel
+from PyFingerprint.fingerprint import get_fingerprint
 
 
-def calculate_adduct(pm, mode, adduct=None):
+def calculate_adduct(pm, mode):
     """
     Given a precursor mass, ion mode, and an adduct(optional), returns all
     possible mass after considering the adducts. We only consider the
@@ -20,7 +21,6 @@ def calculate_adduct(pm, mode, adduct=None):
     Adduct data was obtained from: https://fiehnlab.ucdavis.edu/staff/kind/metabolomics/ms-adduct-calculator/
     :param pm: precursor mass
     :param mode: ionization mode
-    :param adduct: adduct (optional)
     :return: List[all possible masses]
     """
     # adduct_table = {
@@ -177,7 +177,8 @@ def get_binned(inchikey_list):
         smiles = pubchempy.get_compounds(identifier=key, namespace='inchikey')[0].canonical_smiles
         mol = pybel.readstring('smi', smiles)
         fp_vec = fp_conversion(mol.calcfp('FP3').bits, mol.calcfp('FP4').bits, mol.calcfp('MACCS').bits)
-        inchikey_dict[key] = fp_vec
+        full_length_fp = fp_vec + obtain_fingerprint(smiles)
+        inchikey_dict[key] = obtain_5618_fingerprint(full_length_fp)
 
     return inchikey_dict
 
@@ -210,3 +211,49 @@ def fp_conversion(fp3, fp4, macc):
             macc_box[i] = 1
 
     return fp3_box + fp4_box + macc_box
+
+
+def obtain_fingerprint(smi):
+    """
+    Given a canonical SMILES, returns the extended part of the fingerprint. The
+    extended part includes ECFP + PubChem + Klekota-roth, with length
+    1024 + 881 + 4860 = 6765
+    :param smi: canonical SMILES
+    :return: extended fingerprint with length 6765
+    """
+    cdktypes = ['extended', 'pubchem', 'klekota-roth']
+
+    output = {}
+    for f in cdktypes:
+        output[f] = get_fingerprint(smi, f)
+
+    output_np = output.copy()
+    for k, fp in output.items():
+        output_np[k] = fp.to_numpy()
+
+    fp = []
+    for k, v in output_np.items():
+        fp += v.tolist()
+
+    return [int(i) for i in fp]
+
+
+def obtain_5618_fingerprint(full_length_fp):
+    """
+    Given the full length fingerprint (length of 7293), trimmed it to length of
+    5618.
+    :param full_length_fp: full length fingerprint
+    :return: 5618 fingerprint
+    """
+    new_fp = []
+    with open('_files/fp_to_add_indexes.p', 'rb') as f:
+        fp_indexes_list = pickle.load(f)
+
+    for fp_i in fp_indexes_list:
+        new_fp.append(full_length_fp[fp_i])
+
+    if len(new_fp) == 5618:
+        return new_fp
+    else:
+        print('fp length error')
+        return

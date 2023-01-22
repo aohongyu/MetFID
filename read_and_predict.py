@@ -38,7 +38,7 @@ def msms_predict(msms_file_path):
 def inchikey_predict(msms_file_path, inchikey_file_path):
     """
     Given a MS/MS data file which contains the first element in the file
-    represents the precursor m/z, retention time(in minutes), and ion mode.
+    represents the precursor m/z, and ion mode.
     The remaining are m/z and intensity pairs. The other file is a .txt that
     includes some inchikeys. Ranks the inchikeys in order.
     :param msms_file_path: file path for msms data
